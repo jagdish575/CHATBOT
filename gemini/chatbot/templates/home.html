@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .chatbox { list-style: none; padding: 0; margin: 0; }
+        .chatbox li { padding: 10px; border-bottom: 1px solid #ccc; }
+        .chatbox .incoming { background-color: #f1f1f1; }
+        .chatbox .outgoing { background-color: #e1f5fe; }
+        .chat-input { margin-top: 10px; }
+        .chat-input textarea { width: 100%; padding: 10px; }
+        .chat-input button { padding: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Chatbot</h1>
+    <ul class="chatbox" id="chatbox">
+        <!-- Chat messages will be appended here -->
+    </ul>
+    <div class="chat-input">
+        <textarea id="message" placeholder="Enter a message..." spellcheck="false"></textarea>
+        <button id="send-btn">Send</button>
+    </div>
+    <script>
+        document.getElementById('send-btn').addEventListener('click', function() {
+            var message = document.getElementById('message').value;
+            if (message.trim() === '') return;
+
+            var chatbox = document.getElementById('chatbox');
+            var userMessageElem = document.createElement('li');
+            userMessageElem.className = 'chat outgoing';
+            userMessageElem.textContent = message;
+            chatbox.appendChild(userMessageElem);
+            document.getElementById('message').value = '';
+
+            fetch('', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: new URLSearchParams({
+                    'message': message
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                var botMessageElem = document.createElement('li');
+                botMessageElem.className = 'chat incoming';
+                botMessageElem.textContent = data.response || data.error;
+                chatbox.appendChild(botMessageElem);
+                chatbox.scrollTop = chatbox.scrollHeight;
+            });
+        });
+    </script>
+</body>
+</html>
